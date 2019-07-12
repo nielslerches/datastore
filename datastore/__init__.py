@@ -87,18 +87,16 @@ class DataStore:
                     warnings.warn('skipping entry entirely')
                     ok = False
                 continue
-
             index_additions.append((index_key, index_entry_key))
 
-        else:
-            if ok:
-                self.dataset[entry_id] = entry
-                for index_key, index_entry_key in index_additions:
-                    self.indices[index_key][index_entry_key].append(entry_id)
+        if ok:
+            self.dataset[entry_id] = entry
+            for index_key, index_entry_key in index_additions:
+                self.indices[index_key][index_entry_key].append(entry_id)
 
     def get(self, **kwargs):
         comparisons = []
-        for key, value in sorted(kwargs.items(), key=lambda item: item[0]):
+        for key, value in kwargs.items():
             for comparison_key in self.comparisons.keys():
                 if key.endswith('__' + comparison_key):
                     entry_value_key = key.rsplit('__', 1)[0]
@@ -107,7 +105,7 @@ class DataStore:
             else:
                 comparisons.append((key, 'eq', value))
 
-        index_key = tuple(zip(*comparisons))[0]
+        index_key = tuple(zip(*sorted(comparisons, key=lambda item: item[0])))[0]
         if index_key in self.indices:
             entry_ids = []
             for index_entry_key, index_entry_ids in self.indices[index_key].items():

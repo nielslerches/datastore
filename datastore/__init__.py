@@ -4,6 +4,14 @@ from collections import defaultdict
 from uuid import uuid4
 
 
+def partially_masks(iterable1, iterable2):
+    for item in iterable1:
+        if item in iterable2:
+            return True
+
+    return False
+
+
 class DataStore:
     comparisons = {
         'eq': lambda a, b: a == b,
@@ -26,6 +34,28 @@ class DataStore:
             for index_key
             in self.indices_config.keys()
         }
+
+        self.indices_config = {
+            tuple(sorted(index_key, key=lambda item: item[0])): unique
+            for index_key, unique
+            in self.indices_config.items()
+        }
+
+        self.indices = {
+            tuple(sorted(index_key, key=lambda item: item[0])): index
+            for index_key, index
+            in self.indices.items()
+        }
+
+        indices_config_overrides = []
+        for index_key1, unique1 in self.indices_config.items():
+            for index_key2, unique2 in self.indices_config.items():
+                if len(index_key2) > len(index_key1) and unique1 and not unique2 and partially_masks(index_key2, index_key1):
+                    warnings.warn('{0!r} partially masks {1!r}, while {1!r} has a unique constraint. overriding unique constraint for {0!r} with True'.format(index_key2, index_key1))
+                    indices_config_overrides.append((index_key2, True))
+
+        for index_key, unique in indices_config_overrides:
+            self.indices_config[index_key] = unique
 
         for entry in (initial_dataset or []):
             self.add(entry=entry)
@@ -68,7 +98,7 @@ class DataStore:
 
     def get(self, **kwargs):
         comparisons = []
-        for key, value in kwargs.items():
+        for key, value in sorted(kwargs.items(), key=lambda item: item[0]):
             for comparison_key in self.comparisons.keys():
                 if key.endswith('__' + comparison_key):
                     entry_value_key = key.rsplit('__', 1)[0]

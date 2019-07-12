@@ -19,6 +19,16 @@ class DataStoreTest(unittest.TestCase):
             ],
         )
 
+    def test_overriding_unique_constraint(self):
+        with self.assertWarns(UserWarning):
+            datastore = DataStore(
+                indices_config={
+                    ('id',): True,
+                    ('id', 'name'): False,
+                }
+            )
+        self.assertTrue(datastore.indices_config[('id', 'name')])
+
     def test_get_by_eq(self):
         self.assertListEqual(
             self.datastore.get(id=2),

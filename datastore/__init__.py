@@ -27,7 +27,7 @@ class DataStore:
     }
 
     def __init__(self, indices_config=None, initial_dataset=None):
-        self.indices_config = indices_config or {}
+        self.indices_config = indices_config.copy() if indices_config is not None or {}
         self.dataset = {}
         self.indices = {
             index_key: defaultdict(list)

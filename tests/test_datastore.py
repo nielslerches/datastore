@@ -68,3 +68,4 @@ class DataStoreTest(unittest.TestCase):
         datastore.add({'name': 'John Doe'})
         with self.assertWarns(UserWarning):
             datastore.add({'name': 'John Doe'})
+        self.assertTrue(len(datastore.dataset) == 1)

@@ -6,4 +6,4 @@ An in-memory datastore, written in Python
 - Optional indexing
 
 ## Why
-Don't know, had fun
+Don't know, really.
